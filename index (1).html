@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Assistent</title>
+<style>
+/* Reset & font */
+body,html{margin:0;padding:0;font-family:Arial,sans-serif;height:100%;display:flex;flex-direction:column;}
+body.dark{background:#202123;color:white;}
+body.light{background:#f8f9fa;color:#111;}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:#343541;color:white;}
+body.light header{background:#e2e2e2;color:black;}
+header h1{margin:0;font-size:20px;}
+header button{padding:8px 12px;border:none;border-radius:5px;cursor:pointer;}
+
+/* Tabs */
+#tabs button{margin-left:5px;padding:8px 12px;border:none;border-radius:5px;background:#10a37f;color:white;cursor:pointer;}
+body.light #tabs button{background:#22c55e;color:white;}
+
+/* Chat box */
+#chatBox{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;background:#343541;border-radius:10px;margin:10px;}
+body.light #chatBox{background:#e2e2e2;color:black;}
+.message{max-width:70%;padding:12px;margin:5px 0;border-radius:12px;line-height:1.4;}
+.user{align-self:flex-end;background:#10a37f;color:white;}
+.ai{align-self:flex-start;background:#444654;color:white;}
+body.light .user{background:#22c55e;color:white;}
+body.light .ai{background:#ddd;color:black;}
+
+/* Input area */
+#inputArea{display:flex;padding:10px;background:#343541;}
+body.light #inputArea{background:#e2e2e2;}
+#inputArea input{flex:1;padding:12px;border-radius:8px;border:none;}
+#inputArea button{margin-left:5px;padding:10px 15px;border:none;border-radius:8px;background:#22c55e;color:white;cursor:pointer;}
+
+/* Search/Image tabs */
+#search,#image{display:none;padding:20px;flex:1;}
+#search input,#image input{width:80%;padding:10px;border-radius:8px;border:none;}
+#search button,#image button{padding:10px 15px;border:none;border-radius:8px;background:#22c55e;color:white;cursor:pointer;margin-left:5px;}
+#image img{max-width:300px;margin-top:10px;border-radius:10px;}
+
+/* Footer */
+footer{text-align:center;padding:10px;font-size:12px;opacity:0.7;color:#888;}
+</style>
+</head>
+<body class="dark">
+
+<header>
+<h1>AI Assistent</h1>
+<button onclick="toggleMode()">🌙</button>
+<div id="tabs">
+<button onclick="showTab('chat')">Chat</button>
+<button onclick="showTab('search')">Search</button>
+<button onclick="showTab('image')">Image</button>
+</div>
+</header>
+
+<!-- Chat Tab -->
+<div id="chat">
+<div id="chatBox"></div>
+<div id="inputArea">
+<input id="input" placeholder="Type your message...">
+<button onclick="send()">Send</button>
+</div>
+</div>
+
+<!-- Search Tab -->
+<div id="search">
+<input id="searchInput" placeholder="Search query...">
+<button onclick="search()">Go</button>
+</div>
+
+<!-- Image Tab -->
+<div id="image">
+<input id="prompt" placeholder="Describe image...">
+<button onclick="generateImage()">Generate</button>
+<br>
+<img id="result" src="" alt="">
+</div>
+
+<footer>This AI was created by Liamz</footer>
+
+<script>
+const chatBox = document.getElementById("chatBox");
+
+// Toggle dark/light mode
+function toggleMode(){
+    document.body.classList.toggle("light");
+    document.body.classList.toggle("dark");
+}
+
+// Show selected tab
+function showTab(tab){
+    document.getElementById("chat").style.display="none";
+    document.getElementById("search").style.display="none";
+    document.getElementById("image").style.display="none";
+    document.getElementById(tab).style.display="block";
+}
+
+// Add message to chat
+function addMessage(text,type){
+    const div=document.createElement("div");
+    div.className="message "+type;
+    div.innerText=text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// AI speak
+function speak(text){
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang="en-US";
+    speechSynthesis.speak(utter);
+}
+
+// Send chat
+function send(){
+    const input=document.getElementById("input");
+    const text=input.value.trim();
+    if(!text) return;
+    addMessage(text,"user");
+    input.value="";
+    addMessage("Thinking...","ai");
+
+    let reply="";
+    if(text.toLowerCase()==="hello ai") reply="Hello Captain";
+    else if(text.toLowerCase().includes("siapa itu liamz?")) reply="Liamz adalah pencipta saya, saya diciptakan olehnya. Jika anda ingin tau seberapa pintar dia? Lihat saja ciptaannya (Saya)";
+    else if(text.toLowerCase().includes("apa saja keunggulan ai ini?")) reply="Tidak banyak karena ini masih Beta Test, tapi saya bisa melakukan pencarian seperti ai lain";
+    else if(text.toLowerCase().includes("siapa kamu?")) reply="Saya adalah Assistent AI yang diciptakan oleh Liamz.";
+    else reply="Sorry, I don't understand that.";
+
+    setTimeout(()=>{
+        // remove Thinking...
+        const last = chatBox.lastChild;
+        if(last && last.innerText==="Thinking...") chatBox.removeChild(last);
+        addMessage(reply,"ai");
+        speak(reply);
+    },500);
+}
+
+// Search
+function search(){
+    const q=document.getElementById("searchInput").value.trim();
+    if(!q) return;
+    window.open("https://www.google.com/search?q="+encodeURIComponent(q));
+}
+
+// Generate Image
+function generateImage(){
+    const prompt=document.getElementById("prompt").value.trim();
+    if(!prompt) return;
+    const url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt);
+    document.getElementById("result").src=url;
+}
+
+// Press Enter to send
+document.getElementById("input").addEventListener("keypress",function(e){
+    if(e.key==="Enter") send();
+});
+
+// Show chat tab by default
+showTab('chat');
+</script>
+
+</body>
+</html>
